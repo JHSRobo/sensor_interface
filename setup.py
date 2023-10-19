@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'depth_sensor = sensor_interface.depth_sensor:main',
+            'imu_sensor = sensor_interface.imu_sensor:main',
         ],
     },
 )

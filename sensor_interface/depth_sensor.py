@@ -1,45 +1,44 @@
 #!/usr/bin/env python3
 
-import ms5837
+from core_lib import ms5837
 import rclpy
-import time
 from rclpy.node import Node
+from rclpy.qos import QoSProfile
 from std_msgs.msg import Float32
 
 class DepthSensor(Node):
     def __init__(self):
         super().__init__("depth_sensor")
-        self.publisher = self.create_publisher(Float32, 'rov/depth_sensor', queue_size=10)
+        qos_profile = QoSProfile(depth=10)
         self.sensor = ms5837.MS5837()
-        self.logger = self.get_logger() 
+        self.logger = self.get_logger()
         self.sensor_init()
-        self.create_timer(0.1, self.pub_sensor)
-        
-    def sensor_init(self):
-        connected = False
-        counter = 1
-        while not connected and counter <= 10:
-            try:
-                self.sensor.init()
-            except IOError as e:
-                self.logger.error(f'{counter} Time: {e}')
-            else:
-                connected = True
-                self.logger.info(f'{counter} Time: depth sensor connected.')
-                self.sensor.setFluidDensity(ms5837.DENSITY_FRESHWATER)
-            counter += 1
-            time.sleep(0.1)
+        self.create_timer(0.05, self.pub_sensor)
+        self.connected = False
 
-        return connected
+    def sensor_init(self):
+
+        # Try to connect to sensor.
+        try:
+            self.sensor.init()
+            self.sensor.setFluidDensity(ms5837.DENSITY_FRESHWATER)
+        except:
+            self.logger.warn("Cannot connect to MS5837. Ignore this if depth sensor is unplugged")
+        else:
+            self.connected = True
+            
+            # Create Publisher only if sensor is connected
+            self.publisher = self.create_publisher(Float32, 'depth_sensor', qos_profile)
     
     def pub_sensor(self):
-        try:
-            self.sensor.read()
-            msg = Float32()
-            msg.data = self.sensor.depth()
-            self.publisher.publish(msg)
-        except IOError as e:
-            self.logger.error(f'sensor read error: {e}')
+        if self.connected:
+            try:
+                self.sensor.read()
+                msg = Float32()
+                msg.data = self.sensor.depth()
+                self.publisher.publish(msg)
+            except IOError as e:
+                self.logger.error(f'Depth sensor read error: {e}')
 
 def main(args=None):
     rclpy.init(args=args)
