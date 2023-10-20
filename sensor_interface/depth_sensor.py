@@ -9,12 +9,14 @@ from std_msgs.msg import Float32
 class DepthSensor(Node):
     def __init__(self):
         super().__init__("depth_sensor")
-        qos_profile = QoSProfile(depth=10)
+        self.qos_profile = QoSProfile(depth=10)
         self.sensor = ms5837.MS5837()
         self.logger = self.get_logger()
-        self.sensor_init()
-        self.create_timer(0.05, self.pub_sensor)
         self.connected = False
+
+        self.sensor_init()
+
+        if self.connected: self.create_timer(0.05, self.pub_sensor)
 
     def sensor_init(self):
 
@@ -28,17 +30,16 @@ class DepthSensor(Node):
             self.connected = True
             
             # Create Publisher only if sensor is connected
-            self.publisher = self.create_publisher(Float32, 'depth_sensor', qos_profile)
+            self.publisher = self.create_publisher(Float32, 'depth_sensor', self.qos_profile)
     
     def pub_sensor(self):
-        if self.connected:
-            try:
-                self.sensor.read()
-                msg = Float32()
-                msg.data = self.sensor.depth()
-                self.publisher.publish(msg)
-            except IOError as e:
-                self.logger.error(f'Depth sensor read error: {e}')
+        try:
+            self.sensor.read()
+            msg = Float32()
+            msg.data = self.sensor.depth()
+            self.publisher.publish(msg)
+        except IOError as e:
+            self.logger.error(f'Depth sensor read error: {e}')
 
 def main(args=None):
     rclpy.init(args=args)
