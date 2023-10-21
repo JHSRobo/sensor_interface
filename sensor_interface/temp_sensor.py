@@ -5,7 +5,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import Float32
 import board
-from adafruit_bme280 import basic as adafruit_bme280
+import adafruit_ahtx0
 
 class TempSensor(Node):
     def __init__(self):
@@ -29,10 +29,10 @@ class TempSensor(Node):
 
         # Try to connect to sensor.
         try:
-            self.i2c = board.I2C(board.SCL, board.SDA)
-            self.sensor = adafruit_bme280.Adafruit_BME280_I2C(self.i2c)
+            self.i2c = board.I2C()
+            self.sensor = adafruit_ahtx0.AHTx0(self.i2c)
         except:
-            self.logger.warn("Cannot connect to BME280. Ignore this if Temp/Humidity sensor is unplugged")
+            self.logger.warn("Cannot connect to AHT20. Ignore this if Temp/Humidity sensor is unplugged")
         else:
             self.connected = True
     
@@ -43,12 +43,14 @@ class TempSensor(Node):
         if temperature_msg is not None: self.thermometer_pub.publish(temperature_msg)
 
         # Publish Humidity
-        humidity_msg = self.create_float_msg(self.sensor.humidity)
-        if humidity_msg is not None: self.thermometer_pub.publish(humidity_msg)
+        humidity_msg = self.create_float_msg(self.sensor.relative_humidity)
+        if humidity_msg is not None: 
+            self.hygrometer_pub.publish(humidity_msg)
+
 
     def create_float_msg(self, measurement): 
         float_msg = Float32()
-        if None in measurement:
+        if measurement is None:
             return None
         float_msg.data = round(float(measurement), 2)
 
