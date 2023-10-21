@@ -17,13 +17,12 @@ class LeakSensor(Node):
         
         self.create_timer(0.25, self.check_leaks)
 
-        self.declare_parameter("ignore_leak_detection", True)
+        self.declare_parameter("leak_detection", True)
     
     def check_leaks(self):
         if RPi.GPIO.input(27):
-            if self.get_parameter("ignore_leak_detection").value:
+            if self.get_parameter("leak_detection").value:
                 self.logger.fatal("WATER IN THE MEH")
-
 
 def main(args=None):
     rclpy.init(args=args)
