@@ -45,6 +45,7 @@ def main(args=None):
     rclpy.init(args=args)
     depth_sensor = DepthSensor()
     rclpy.spin(depth_sensor)
+    depth_sensor.destroy_node()
     rclpy.shutdown()
 
 if __name__ == "__main__":

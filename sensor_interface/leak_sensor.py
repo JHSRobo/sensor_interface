@@ -28,6 +28,7 @@ def main(args=None):
     rclpy.init(args=args)
     leak_sensor = LeakSensor()
     rclpy.spin(leak_sensor)
+    leak_sensor.destroy_node()
     rclpy.shutdown()
 
 if __name__ == "__main__":

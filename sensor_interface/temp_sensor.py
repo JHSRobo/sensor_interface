@@ -59,8 +59,9 @@ class TempSensor(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    imu_sensor = TempSensor()
-    rclpy.spin(imu_sensor)
+    temp_sensor = TempSensor()
+    rclpy.spin(temp_sensor)
+    temp_sensor.destroy_node()
     rclpy.shutdown()
 
 if __name__ == "__main__":

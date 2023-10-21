@@ -79,6 +79,7 @@ def main(args=None):
     rclpy.init(args=args)
     imu_sensor = IMUSensor()
     rclpy.spin(imu_sensor)
+    imu_sensor.destroy_node()
     rclpy.shutdown()
 
 if __name__ == "__main__":
