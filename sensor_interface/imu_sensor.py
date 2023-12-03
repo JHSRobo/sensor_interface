@@ -23,9 +23,9 @@ class IMUSensor(Node):
         self.gravitometer_pub = self.create_publisher(Vector3, 'gravitometer', qos_profile)
 
         self.logger = self.get_logger()
-        self.sensor_init()
-        self.create_timer(0.01, self.pub_sensors)
         self.connected = False
+        self.sensor_init()
+        if self.connected: self.create_timer(0.01, self.pub_sensors)
 
     def sensor_init(self):
 

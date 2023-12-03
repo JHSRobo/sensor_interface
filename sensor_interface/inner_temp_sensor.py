@@ -15,8 +15,8 @@ class TempSensor(Node):
 
         # Create publishers for each sensor on the board
         # A Hygrometer measures humidity
-        self.hygrometer_pub = self.create_publisher(Float32, 'hygrometer', qos_profile)
-        self.thermometer_pub = self.create_publisher(Float32, 'thermometer', qos_profile)
+        self.hygrometer_pub = self.create_publisher(Float32, 'inner_hygrometer', qos_profile)
+        self.thermometer_pub = self.create_publisher(Float32, 'inner_thermometer', qos_profile)
 
         self.logger = self.get_logger()
         self.connected = False
@@ -32,7 +32,7 @@ class TempSensor(Node):
             self.i2c = board.I2C()
             self.sensor = adafruit_ahtx0.AHTx0(self.i2c)
         except:
-            self.logger.warn("Cannot connect to AHT20. Ignore this if Temp/Humidity sensor is unplugged")
+            self.logger.warn("Cannot connect to AHT20. Ignore this if internal Temp/Humidity sensor is unplugged")
         else:
             self.connected = True
     

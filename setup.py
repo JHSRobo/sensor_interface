@@ -22,8 +22,9 @@ setup(
         'console_scripts': [
             'depth_sensor = sensor_interface.depth_sensor:main',
             'imu_sensor = sensor_interface.imu_sensor:main',
-            'temp_sensor = sensor_interface.temp_sensor:main',
+            'inner_temp_sensor = sensor_interface.inner_temp_sensor:main',
             'leak_sensor = sensor_interface.leak_sensor:main',
+            'outer_temp_sensor = sensor_interface.outer_temp_sensor:main',
         ],
     },
 )
