@@ -14,9 +14,11 @@ class DepthSensor(Node):
         self.logger = self.get_logger()
         self.connected = False
 
+        self.publisher = self.create_publisher(Float32, 'depth_sensor', self.qos_profile)
+
         self.sensor_init()
 
-        if self.connected: self.create_timer(0.05, self.pub_sensor)
+        self.create_timer(0.05, self.pub_sensor)
 
     def sensor_init(self):
 
@@ -30,16 +32,10 @@ class DepthSensor(Node):
             self.connected = True
             
             # Create Publisher only if sensor is connected
-            self.publisher = self.create_publisher(Float32, 'depth_sensor', self.qos_profile)
     
     def pub_sensor(self):
-        try:
-            self.sensor.read()
-            msg = Float32()
-            msg.data = self.sensor.depth()
-            self.publisher.publish(msg)
-        except IOError as e:
-            self.logger.error(f'Depth sensor read error: {e}')
+        msg = Float32()
+        self.publisher.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)

@@ -23,7 +23,7 @@ class TempSensor(Node):
 
         self.sensor_init()
         
-        if self.connected: self.create_timer(0.01, self.pub_sensors)
+        self.create_timer(0.05, self.pub_sensors)
 
     def sensor_init(self):
 
@@ -39,11 +39,11 @@ class TempSensor(Node):
     def pub_sensors(self):
 
         # Publish Temperature
-        temperature_msg = self.create_float_msg(self.sensor.temperature)
+        temperature_msg = Float32()
         if temperature_msg is not None: self.thermometer_pub.publish(temperature_msg)
 
         # Publish Humidity
-        humidity_msg = self.create_float_msg(self.sensor.relative_humidity)
+        humidity_msg = Float32()
         if humidity_msg is not None: 
             self.hygrometer_pub.publish(humidity_msg)
 
