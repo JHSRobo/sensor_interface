@@ -18,7 +18,6 @@
   <depend>std_srvs</depend>
   <depend>core</depend>
   <depend>python3-smbus</depend>
-  <depend>python-smbus</depend>
   <depend>python3-adafruit-blinka-pip</depend>
   <depend>python3-adafruit-circuitpython-bno055-pip</depend>
 
