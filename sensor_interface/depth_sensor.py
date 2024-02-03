@@ -11,10 +11,9 @@ class DepthSensor(Node):
         super().__init__("depth_sensor")
         self.qos_profile = QoSProfile(depth=10)
         self.sensor = ms5837.MS5837()
-        self.logger = self.get_logger()
+        self.log = self.get_logger()
         self.connected = False
 
-        self.publisher = self.create_publisher(Float32, 'depth_sensor', self.qos_profile)
 
         self.sensor_init()
 
@@ -27,15 +26,20 @@ class DepthSensor(Node):
             self.sensor.init()
             self.sensor.setFluidDensity(ms5837.DENSITY_FRESHWATER)
         except:
-            self.logger.warn("Cannot connect to MS5837. Ignore this if depth sensor is unplugged")
+            self.log.warn("Cannot connect to MS5837. Ignore this if depth sensor is unplugged")
         else:
             self.connected = True
+            self.publisher = self.create_publisher(Float32, 'depth_sensor', self.qos_profile)
             
             # Create Publisher only if sensor is connected
     
     def pub_sensor(self):
-        msg = Float32()
-        self.publisher.publish(msg)
+        if self.connected:
+            msg = Float32()
+            self.sensor.read()
+            msg.data = self.sensor.depth()
+            self.log.info(str(msg.data))
+            self.publisher.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)
