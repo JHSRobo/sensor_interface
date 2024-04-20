@@ -26,7 +26,7 @@ class LeakSensor(Node):
 
     # See if there are any leaks. Runs 4x / second
     def check_leaks(self):
-        if RPi.GPIO.input(27):
+        if not RPi.GPIO.input(27):
             request = SetBool.Request()
             if self.get_parameter("leak_detection").value:
                 self.logger.fatal("WATER IN THE MEH")
