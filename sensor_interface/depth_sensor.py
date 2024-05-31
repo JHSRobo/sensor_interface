@@ -39,7 +39,6 @@ class DepthSensor(Node):
             msg = Float32()
             self.sensor.read()
             msg.data = self.sensor.depth()
-            self.log.info(str(msg.data))
             self.publisher.publish(msg)
 
 def main(args=None):

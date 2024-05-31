@@ -25,7 +25,7 @@ class IMUSensor(Node):
         self.logger = self.get_logger()
         self.connected = False
         self.sensor_init()
-        if self.connected: self.create_timer(0.01, self.pub_sensors)
+        if self.connected: self.create_timer(0.003, self.pub_sensors)
 
     def sensor_init(self):
 
@@ -42,28 +42,40 @@ class IMUSensor(Node):
     def pub_sensors(self):
 
         # Publish Acceleration
-        acceleration_msg = self.create_vector_msg(self.sensor.acceleration)
-        if acceleration_msg is not None: self.accelerometer_pub.publish(acceleration_msg)
+        try: acceleration_msg = self.create_vector_msg(self.sensor.acceleration)
+        except: pass
+        else: 
+            if acceleration_msg is not None: self.accelerometer_pub.publish(acceleration_msg)
 
         # Publish Magnetometry
-        magnetometry_msg = self.create_vector_msg(self.sensor.magnetic)
-        if magnetometry_msg is not None: self.magnetometer_pub.publish(magnetometry_msg)
+        try: magnetometry_msg = self.create_vector_msg(self.sensor.magnetic)
+        except: pass
+        else: 
+            if magnetometry_msg is not None: self.magnetometer_pub.publish(magnetometry_msg)
 
         # Publish Magnetometry
-        gyro_msg = self.create_vector_msg(self.sensor.gyro)
-        if gyro_msg is not None: self.gyro_pub.publish(gyro_msg)
+        try: gyro_msg = self.create_vector_msg(self.sensor.gyro)
+        except: pass
+        else: 
+            if gyro_msg is not None: self.gyro_pub.publish(gyro_msg)
 
         # Publish Euler Orientation
-        orientation_msg = self.create_vector_msg(self.sensor.euler)
-        if orientation_msg is not None: self.orientation_pub.publish(orientation_msg)
+        try: orientation_msg = self.create_vector_msg(self.sensor.euler)
+        except: pass
+        else: 
+            if orientation_msg is not None: self.orientation_pub.publish(orientation_msg)
 
         # Publish Linear Acceleration (Without Gravity)
-        linear_acceleration_msg = self.create_vector_msg(self.sensor.linear_acceleration)
-        if linear_acceleration_msg is not None: self.linear_accelerometer_pub.publish(linear_acceleration_msg)
+        try: linear_acceleration_msg = self.create_vector_msg(self.sensor.linear_acceleration)
+        except: pass
+        else: 
+            if linear_acceleration_msg is not None: self.linear_accelerometer_pub.publish(linear_acceleration_msg)
 
         # Publish Gravitometry (Without Linear Acceleration)
-        gravitometry_msg = self.create_vector_msg(self.sensor.gravity)
-        if gravitometry_msg is not None: self.gravitometer_pub.publish(gravitometry_msg)
+        try: gravitometry_msg = self.create_vector_msg(self.sensor.gravity)
+        except: pass
+        else: 
+            if gravitometry_msg is not None: self.gravitometer_pub.publish(gravitometry_msg)
 
     def create_vector_msg(self, measurement): 
         vector_msg = Vector3()
