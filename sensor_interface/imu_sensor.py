@@ -35,6 +35,7 @@ class IMUSensor(Node):
             self.sensor = adafruit_bno055.BNO055_I2C(self.i2c)
         except:
             self.logger.warn("Cannot connect to BNO055. Ignore this if IMU is unplugged")
+            exit()
         else:
             self.connected = True
     

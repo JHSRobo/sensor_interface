@@ -27,6 +27,7 @@ class DepthSensor(Node):
             self.sensor.setFluidDensity(ms5837.DENSITY_FRESHWATER)
         except:
             self.log.warn("Cannot connect to MS5837. Ignore this if depth sensor is unplugged")
+            exit()
         else:
             self.connected = True
             self.publisher = self.create_publisher(Float32, 'depth_sensor', self.qos_profile)

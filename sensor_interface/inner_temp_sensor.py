@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import Float32
+from rcl_interfaces.msg import ParameterDescriptor, FloatingPointRange
 import board
 import adafruit_ahtx0
 
@@ -11,12 +12,8 @@ class TempSensor(Node):
     def __init__(self):
         super().__init__("temp_sensor")
 
-        qos_profile = QoSProfile(depth=10)
+        self.qos_profile = QoSProfile(depth=10)
 
-        # Create publishers for each sensor on the board
-        # A Hygrometer measures humidity
-        self.hygrometer_pub = self.create_publisher(Float32, 'inner_hygrometer', qos_profile)
-        self.thermometer_pub = self.create_publisher(Float32, 'inner_thermometer', qos_profile)
 
         self.logger = self.get_logger()
         self.connected = False
@@ -24,6 +21,17 @@ class TempSensor(Node):
         self.sensor_init()
         
         self.create_timer(0.05, self.pub_sensors)
+        self.create_timer(0.1, self.update_parameters)
+
+        # Define the parameter
+        slider_bounds = FloatingPointRange()
+        slider_bounds.from_value = -3.0
+        slider_bounds.to_value = 3.0
+        slider_bounds.step = 1.0
+        slider_descriptor = ParameterDescriptor(floating_point_range = [slider_bounds])
+        self.declare_parameter('temperature_offset', 0.0, slider_descriptor)
+
+        self.offset = 0
 
     def sensor_init(self):
 
@@ -33,17 +41,26 @@ class TempSensor(Node):
             self.sensor = adafruit_ahtx0.AHTx0(self.i2c)
         except:
             self.logger.warn("Cannot connect to AHT20. Ignore this if internal Temp/Humidity sensor is unplugged")
+            exit()
         else:
             self.connected = True
+            # Create publishers for each sensor on the board
+            # A Hygrometer measures humidity
+            self.hygrometer_pub = self.create_publisher(Float32, 'inner_hygrometer', self.qos_profile)
+            self.thermometer_pub = self.create_publisher(Float32, 'inner_thermometer', self.qos_profile)
+
+
+    def update_parameters(self):
+        self.offset = self.get_parameter('temperature_offset').value
     
     def pub_sensors(self):
 
         # Publish Temperature
-        temperature_msg = Float32()
+        temperature_msg = self.create_float_msg(self.sensor.temperature + self.offset)
         if temperature_msg is not None: self.thermometer_pub.publish(temperature_msg)
 
         # Publish Humidity
-        humidity_msg = Float32()
+        humidity_msg = self.create_float_msg(self.sensor.relative_humidity + self.offset)
         if humidity_msg is not None: 
             self.hygrometer_pub.publish(humidity_msg)
 
