@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import Float32
+from rcl_interfaces.msg import ParameterDescriptor, FloatingPointRange
 import board
 import adafruit_sht31d
 
@@ -35,6 +36,14 @@ class TempSensor(Node):
             self.logger.warn("Cannot connect to SHT31D. Ignore this if external Temp/Humidity sensor is unplugged")
         else:
             self.connected = True
+
+            temperature_bounds = FloatingPointRange()
+            temperature_bounds.from_value = -2.0
+            temperature_bounds.to_value = 2.0
+            temperature_bounds.step = 0.02
+            temperature_descriptor = ParameterDescriptor(floating_point_range = [temperature_bounds])
+
+            self.declare_parameter('temperature_calibration', 0, temperature_descriptor)
     
     def pub_sensors(self):
 
