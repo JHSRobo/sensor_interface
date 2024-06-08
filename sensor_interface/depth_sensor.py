@@ -5,6 +5,8 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import Float32
+from rcl_interfaces.msg import ParameterDescriptor, FloatingPointRange
+
 
 class DepthSensor(Node):
     def __init__(self):
@@ -27,19 +29,42 @@ class DepthSensor(Node):
             self.sensor.setFluidDensity(ms5837.DENSITY_FRESHWATER)
         except:
             self.log.warn("Cannot connect to MS5837. Ignore this if depth sensor is unplugged")
+            exit()
         else:
             self.connected = True
-            self.publisher = self.create_publisher(Float32, 'depth_sensor', self.qos_profile)
+            self.temp_publisher = self.create_publisher(Float32, 'outer_temp_sensor', self.qos_profile)
+            self.depth_publisher = self.create_publisher(Float32, 'depth_sensor', self.qos_profile)
+
+            self.create_timer(0.05, self.update_parameters)
+
+            # Define the parameter
+            slider_bounds = FloatingPointRange()
+            slider_bounds.from_value = -6.0
+            slider_bounds.to_value = 6.0
+            slider_bounds.step = 0.05
+            slider_descriptor = ParameterDescriptor(floating_point_range = [slider_bounds])
+            self.declare_parameter('temperature_offset', 0.0, slider_descriptor)
+
+            self.offset = 0
             
             # Create Publisher only if sensor is connected
+
+    def update_parameters(self):
+        self.offset = self.get_parameters('temperature_offset').value
     
     def pub_sensor(self):
         if self.connected:
-            msg = Float32()
-            self.sensor.read()
-            msg.data = self.sensor.depth()
-            self.log.info(str(msg.data))
-            self.publisher.publish(msg)
+            depth_msg = Float32()
+            temp_msg = Float32()
+            try: 
+                self.sensor.read()
+                depth_msg.data = self.sensor.depth()
+                temp_msg.data = self.sensor.temperature() + self.offset
+            except: pass
+            else:
+                self.depth_publisher.publish(depth_msg)
+                self.temp_publisher.publish(temp_msg)
+            
 
 def main(args=None):
     rclpy.init(args=args)
