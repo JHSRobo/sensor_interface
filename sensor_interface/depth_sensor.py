@@ -50,7 +50,7 @@ class DepthSensor(Node):
             # Create Publisher only if sensor is connected
 
     def update_parameters(self):
-        self.offset = self.get_parameters('temperature_offset').value
+        self.offset = self.get_parameter('temperature_offset').value
     
     def pub_sensor(self):
         if self.connected:
