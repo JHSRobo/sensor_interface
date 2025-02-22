@@ -12,7 +12,7 @@ class DepthSensor(Node):
     def __init__(self):
         super().__init__("depth_sensor")
         self.qos_profile = QoSProfile(depth=10)
-        self.sensor = ms5837.MS5837()
+        self.sensor = ms5837.MS5837_02BA()
         self.log = self.get_logger()
         self.connected = False
 
