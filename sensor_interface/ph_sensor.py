@@ -11,7 +11,7 @@ class PHSensorNode(Node): # Create a class that goes from the Node class
         super().__init__('ph_sensor_node')
         self.publisher_voltage = self.create_publisher(Float32, 'ph_sensor/voltage', 10) # Create a publisher to publish the voltage value
         self.publisher_ph = self.create_publisher(Float32, 'ph_sensor/ph', 10) # Create a publisher to publish the pH value
-        self.timer = self.create_timer(1.0, self.read_sensor) # Create a timer to read the sensor every second
+        self.timer = self.create_timer(0, self.read_sensor) # Create a timer to read the sensor every second
         
         i2c = busio.I2C(board.SCL, board.SDA) # Initialize I2C communication
         self.ads = ADS.ADS1115(i2c) # Initialize the ADS1115 ADC
@@ -48,8 +48,11 @@ class PHSensorNode(Node): # Create a class that goes from the Node class
         self.publisher_ph.publish(pH_msg)
 
 def main(args=None): # Main function
-        node.destroy_node()
-        rclpy.shutdown()
+    rclpy.init(args=args)
+    node = PHSensorNode()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__': # Run the main function
     main()
