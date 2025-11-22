@@ -7,7 +7,7 @@ import rclpy
 from rclpy.node import Node 
 from rclpy.qos import QoSProfile
 from std_msgs.msg import Float32
-from core.msg import Thruster_stats, Thruster_stat
+from core.msg import Thrusterstats, Thrusterstat
 import board
 
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -31,7 +31,7 @@ VOLTAGE_GAINS = {
 
 class CurrentRestricterNode(Node):
     def __init__(self):
-        super().__init__("powerboard_current_sensor")
+        super().__init__("current_restricter")
         
         self.log = self.get_logger()
         self.connected = False
@@ -39,7 +39,7 @@ class CurrentRestricterNode(Node):
         self.sensor_init()
 
         if self.connected:
-            self.electronics_pub = self.create_publisher(Thruster_stats, 'thruster_stats', self.qos_profile)
+            self.electronics_pub = self.create_publisher(Thrusterstats, 'thruster_stats', self.qos_profile)
 
             self.create_timer(0.01, self.pub_sensor) 
 
