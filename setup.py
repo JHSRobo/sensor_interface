@@ -26,7 +26,8 @@ setup(
             'leak_sensor = sensor_interface.leak_sensor:main',
             'outer_temp_sensor = sensor_interface.outer_temp_sensor:main',
             'electronics_sensor = sensor_interface.electronics_sensor:main',
-            'ph_sensor = sensor_interface.ph_sensor:main'
+            'ph_sensor = sensor_interface.ph_sensor:main',
+	    'current_restrictor = sensor_interface.current_restrictor:main'
         ],
     },
 )

@@ -10,29 +10,10 @@ from std_msgs.msg import Float32
 from core.msg import Thrusterstats, Thrusterstat
 import board
 
-i2c = busio.I2C(board.SCL, board.SDA)
-
-left_thrusters = ADS.ADS1015(i2c, address=0x48)
-right_thrusters = ADS.ADS1015(i2c, address=0x49)
-voltage_channels = ADS.ADS1015(i2c, address=0x4A)
-
-ads_pins = [ADS.P0, ADS.P1, ADS.P2, ADS.P3]
-
-SHUNT_VALUE = 0.0033
-AMP_FACTOR = 50
-
-VOLTAGE_GAINS = {
-    ADS.P0: 19.8,  # expects ~48V
-    ADS.P1: 5.273,  # expects ~12V
-    ADS.P2: 2.0,   # expects ~5V
-    ADS.P3: 2.0,   # expects ~3.3V
-}
-
-
 class CurrentRestricterNode(Node):
     def __init__(self):
         super().__init__("current_restricter")
-        
+
         self.log = self.get_logger()
         self.connected = False
 
@@ -43,19 +24,38 @@ class CurrentRestricterNode(Node):
 
             self.create_timer(0.01, self.pub_sensor) 
 
+
+    def sensor_init():
+	i2c = busio.I2C(board.SCL, board.SDA)
+
+	left_thrusters = ADS.ADS1015(i2c, address=0x48)
+	right_thrusters = ADS.ADS1015(i2c, address=0x49)
+	voltage_channels = ADS.ADS1015(i2c, address=0x4A)
+
+	SHUNT_VALUE = 0.0033
+	AMP_FACTOR = 50
+
+	VOLTAGE_GAINS = {
+    	ADS.P0: 19.8,  # expects ~48V
+    	ADS.P1: 5.273,  # expects ~12V
+    	ADS.P2: 2.0,   # expects ~5V
+    	ADS.P3: 2.0,   # expects ~3.3V
+	}
+
+
+
     def read_amps(self):
         readings = []
         for name, ads in [("L", left_thrusters), ("R", right_thrusters)]:
-            for i, pin in enumerate(ads_pins):
+            for pin in range(0, 4):
                 chan = AnalogIn(ads, pin)
                 current = chan.voltage / (SHUNT_VALUE * AMP_FACTOR)
                 readings.append(current)
-        
         return readings
 
     def read_volts(self):
         readings = []
-        for i, pin in enumerate(ads_pins):
+        for pin in range(0, 4:
             chan = AnalogIn(voltage_channels, pin)
             voltage = chan.voltage * VOLTAGE_GAINS[pin]
             readings[f"V{i}"] = voltage
@@ -67,31 +67,32 @@ class CurrentRestricterNode(Node):
         amps = self.read_amps()
         volts = self.read_volts()
 
-        msg.thruster1.current = amps[0]
-        msg.thruster1.volts = volts[0]
+        msg.amps.value1 = amps[0]
+        msg.volts.value1 = volts[0]
 
-        msg.thruster2.current = amps[0]
-        msg.thruster2.volts = volts[0]
+        msg.amps.value2 = amps[1]
+        msg.volts.value2 = volts[1]
 
-        msg.thruster3.current = amps[0]
-        msg.thruster3.volts = volts[0]
+        msg.amps.value3 = amps[2]
+        msg.volts.value3 = volts[2]
 
-        msg.thruster4.current = amps[0]
-        msg.thruster4.volts = volts[0]
+        msg.amps.value4 = amps[3]
+        msg.volts.value4 = volts[3]
 
-        msg.thruster5.current = amps[0]
-        msg.thruster5.volts = volts[0]
+        msg.amps.value5 = amps[4]
+        msg.volts.value5 = 0
 
-        msg.thruster6.current = amps[0]
-        msg.thruster6.volts = volts[0]
+        msg.amps.value6 = amps[5]
+        msg.volts.value6 = 0
 
-        msg.thruster7.current = amps[0]
-        msg.thruster7.volts = volts[0]
+        msg.amps.value7 = amps[6]
+        msg.volts.value7 = 0
 
-        msg.thruster8.current = amps[0]
-        msg.thruster8.volts = volts[0]
+        msg.amps.value8 = amps[7]
+        msg.volts.value8 = 0
 
-        self.electronics_pub.publish(msg)
+
+	self.electronics_pub.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)
