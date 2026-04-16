@@ -3,6 +3,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import Float64
 from core.msg import ThrusterVoltage, ThrusterCurrent
+from gpiozero import CPUTemperature
 
 import board, busio
 from adafruit_ads1x15 import ADS1015, AnalogIn, ads1x15
@@ -25,7 +26,10 @@ class ThrustersMonitorNode(Node):
             self.log.info("init")
             self.voltage_pub = self.create_publisher(ThrusterVoltage, 'thruster_voltage', 10)
             self.current_pub = self.create_publisher(ThrusterCurrent, 'thruster_current', 10)
+            self.temperature_pub = self.create_publisher(CpuTemperature, 'cpu_temperature', 10)
             self.create_timer(0.01, self.pub_sensor) 
+            self.create_timer(0.01, self.temp_sensor)
+            
 
 
     def sensor_init(self):
@@ -51,6 +55,16 @@ class ThrustersMonitorNode(Node):
                                AnalogIn(self.right_thrusters_ads, ads1x15.Pin.A3)]
 
         self.connected = True
+    
+
+    def temp_sensor(self):
+        try:
+            self.cpu_temperature_c = self.CPUTemperature()
+        except:
+            pass
+        else:
+            self.temperature_pub.publish(cpu_temperature_c)
+    
 
     def pub_sensor(self):
         self.pub_volt()
