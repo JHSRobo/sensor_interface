@@ -1,0 +1,109 @@
+import board
+import busio
+import adafruit_ads1x15.ads1015 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
+
+import rclpy
+from rclpy.node import Node 
+from rclpy.qos import QoSProfile
+from std_msgs.msg import Float32
+from core.msg import Thrusterstats, Thrusterstat
+import board
+
+class CurrentRestricterNode(Node):
+    def __init__(self):
+        super().__init__("current_restricter")
+
+        self.log = self.get_logger()
+        self.connected = False
+
+        self.sensor_init()
+
+        if self.connected:
+            self.log.info("init")
+            self.current_pub = self.create_publisher(Thrusterstats, 'thruster_current', 10)
+            self.voltage_pub = self.create_publisher(Thrusterstats, 'thruster_voltage', 10)
+            self.create_timer(0.01, self.pub_sensor) 
+
+
+    def sensor_init(self):
+        self.i2c = busio.I2C(board.SCL, board.SDA)
+
+        self.left_thrusters = ADS.ADS1015(self.i2c, address=0x48)
+        self.right_thrusters = ADS.ADS1015(self.i2c, address=0x49)
+        self.voltage_channels = ADS.ADS1015(self.i2c, address=0x4A)
+
+        self.SHUNT_VALUE = 0.0033
+        self.AMP_FACTOR = 50
+
+        self.VOLTAGE_GAINS = {
+                0: 19.8,  # expects ~48V
+                1: 5.273,  # expects ~12V
+                2: 5.273,   # expects ~5V
+                3: 2.0,   # expects ~3.3V
+        }
+
+        self.connected = True
+
+    def read_amps(self):
+        readings = []
+        for name, ads in [("L", self.left_thrusters), ("R", self.right_thrusters)]:
+            for pin in range(0, 4):
+                chan = AnalogIn(ads, pin)
+                current = chan.voltage / (self.SHUNT_VALUE * self.AMP_FACTOR)
+                readings.append(current)
+        return readings
+
+    def read_volts(self):
+        readings = []
+        for pin in range(0, 4):
+            chan = AnalogIn(self.voltage_channels, pin)
+            voltage = chan.voltage * self.VOLTAGE_GAINS[pin]
+            readings.append(voltage)
+        return readings
+
+    def pub_sensor(self):
+        msg = Thrusterstats()
+
+        amps = self.read_amps()
+        volts = self.read_volts()
+
+        self.log.info(str(amps))
+        self.log.info(str(volts))
+
+        msg.amps.value1 = amps[0]
+        msg.volts.value1 = volts[0]
+
+        msg.amps.value2 = amps[1]
+        msg.volts.value2 = volts[1]
+
+        msg.amps.value3 = amps[2]
+        msg.volts.value3 = volts[2]
+
+        msg.amps.value4 = amps[3]
+        msg.volts.value4 = volts[3]
+
+        msg.amps.value5 = amps[4]
+        msg.volts.value5 = 0.0
+
+        msg.amps.value6 = amps[5]
+        msg.volts.value6 = 0.0
+
+        msg.amps.value7 = amps[6]
+        msg.volts.value7 = 0.0
+
+        msg.amps.value8 = amps[7]
+        msg.volts.value8 = 0.0
+
+        self.electronics_pub.publish(msg)
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    current_restricter = CurrentRestricterNode()
+    rclpy.spin(current_restricter)
+    current_restricter.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == "__main__":
+    main()

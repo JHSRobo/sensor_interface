@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
-from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3, Quaternion
 import board
 import busio
 import adafruit_bno055
@@ -12,13 +12,16 @@ class IMUSensor(Node):
     def __init__(self):
         super().__init__("imu_sensor")
 
+        self.log = self.get_logger()
+
         qos_profile = QoSProfile(depth=10)
 
         # Create publishers for each sensor on the IMU
         self.accelerometer_pub = self.create_publisher(Vector3, 'accelerometer', qos_profile)
         self.magnetometer_pub = self.create_publisher(Vector3, 'magnetometer', qos_profile)
         self.gyro_pub = self.create_publisher(Vector3, 'gyroscope', qos_profile)
-        self.orientation_pub = self.create_publisher(Vector3, 'orientation_sensor', qos_profile)
+        self.euler_pub = self.create_publisher(Vector3, 'euler_orientation', qos_profile)
+        self.quaternion_pub = self.create_publisher(Quaternion, 'quaternion_orientation', qos_profile)
         self.linear_accelerometer_pub = self.create_publisher(Vector3, 'linear_accelerometer', qos_profile)
         self.gravitometer_pub = self.create_publisher(Vector3, 'gravitometer', qos_profile)
 
@@ -60,10 +63,17 @@ class IMUSensor(Node):
             if gyro_msg is not None: self.gyro_pub.publish(gyro_msg)
 
         # Publish Euler Orientation
-        try: orientation_msg = self.create_vector_msg(self.sensor.euler)
+        try: euler_msg = self.create_vector_msg(self.sensor.euler)
         except: pass
         else: 
-            if orientation_msg is not None: self.orientation_pub.publish(orientation_msg)
+            if euler_msg is not None: self.euler_pub.publish(euler_msg)
+
+        # Publish Quaternion Orientation
+        try: quaternion_msg = self.create_quaternion_msg(self.sensor.quaternion)
+        except: pass 
+        else:
+            if quaternion_msg is not None: self.quaternion_pub.publish(quaternion_msg)
+
 
         # Publish Linear Acceleration (Without Gravity)
         try: linear_acceleration_msg = self.create_vector_msg(self.sensor.linear_acceleration)
@@ -86,6 +96,17 @@ class IMUSensor(Node):
         vector_msg.z = round(float(measurement[2]), 2)
 
         return vector_msg
+
+    def create_quaternion_msg(self, measurement):
+        quaternion_msg = Quaternion()
+        if None in measurement:
+            return None
+        quaternion_msg.x = round(float(measurement[0]), 3)
+        quaternion_msg.y = round(float(measurement[1]), 3)
+        quaternion_msg.z = round(float(measurement[2]), 3)
+        quaternion_msg.w = round(float(measurement[3]), 3)
+
+        return quaternion_msg
 
 
 def main(args=None):

@@ -38,6 +38,8 @@ class ElectronicSensorNode(Node):
             self.connected = True
 
     def pub_sensor(self):
+        print(vars(self.ina[1])) 
+
         msg = Channels()
         # Channel 1
         msg.channel_1.bus_voltage = self.ina[0].bus_voltage
