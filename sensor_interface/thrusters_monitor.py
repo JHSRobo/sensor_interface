@@ -3,7 +3,6 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import Float64
 from core.msg import ThrusterVoltage, ThrusterCurrent
-from gpiozero import CPUTemperature
 
 import board, busio
 from adafruit_ads1x15 import ADS1015, AnalogIn, ads1x15
